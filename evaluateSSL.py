@@ -16,7 +16,7 @@ from torch.utils import data, model_zoo
 
 from model.deeplabv2 import Res_Deeplab
 from data.voc_dataset import VOCDataSet
-from data import get_data_path, get_loader
+from data import get_data_path, get_loader, semantic_kitti
 import torchvision.transforms as transform
 from torchvision import transforms
 
@@ -168,6 +168,20 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
         test_dataset = data_loader( data_path, img_size=input_size, is_transform=True, split='val')
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
         interp = nn.Upsample(size=input_size, mode='bilinear', align_corners=True)
+
+    elif dataset == 'semantic_kitti':
+        num_classes = 19 # ?
+        new_h = 65
+        new_w = 2049
+        # data_loader = get_loader(dataset)
+        data_path = get_data_path(dataset)
+        # train_dataset = data_loader(data_path)
+        test_dataset = semantic_kitti.SemanticKitti(
+            data_path / "dataset/sequences", "val",
+            new_h=new_h, new_w=new_w
+        )
+        testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
+        interp = nn.Uspample(size=(new_h, new_w), mode='bilinear', align_corners=True)
 
     print('Evaluating, found ' + str(len(testloader)) + ' images.')
 

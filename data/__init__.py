@@ -19,6 +19,9 @@ def get_data_path(name):
     :param config_file:
     """
     if name == 'cityscapes':
-        return '../data/CityScapes/'
-    if name == 'pascal_voc':
-        return '../data/VOC2012/'
+        return './data/CityScapes/'
+    elif name == 'pascal_voc':
+        return './data/VOC2012/'
+    elif name == 'semantic_kitti':
+        return './data/semantic_kitti'
+

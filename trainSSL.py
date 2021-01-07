@@ -34,7 +34,7 @@ from utils.sync_batchnorm import DataParallelWithCallback
 
 from data.voc_dataset import VOCDataSet
 
-from data import get_loader, get_data_path
+from data import get_loader, get_data_path, semantic_kitti
 from data.augmentations import *
 from tqdm import tqdm
 
@@ -243,8 +243,12 @@ def main():
 
     cudnn.enabled = True
 
+    if dataset == 'semantic_kitti':
+        inchannels = 2
+    else:
+        inchannels = 3
     # create network
-    model = Res_Deeplab(num_classes=num_classes)
+    model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
 
     # load pretrained parameters
     if restore_from[:4] == 'http' :
@@ -292,6 +296,17 @@ def main():
             data_aug = None
 
         train_dataset = data_loader(data_path, is_transform=True, augmentations=data_aug, img_size=input_size)
+    elif dataset == 'semantic_kitti':
+        new_h = 65
+        new_w = 2049
+        # data_loader = get_loader(dataset)
+        data_path = get_data_path(dataset)
+        # train_dataset = data_loader(data_path)
+        train_dataset = semantic_kitti.SemanticKitti(
+            data_path / "dataset/sequences", "train",
+            new_h=new_h, new_w=new_w
+        )
+
 
     train_dataset_size = len(train_dataset)
     print ('dataset size: ', train_dataset_size)
