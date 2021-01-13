@@ -23,6 +23,7 @@ class CrossEntropy2d(nn.Module):
         assert target.dim() == 3
         n, c, h, w = predict.size()
         target_mask = (target >= 0) * (target != self.ignore_label)
+        #print("predict:", n, c, h, w, "target:", target.size())
         target = target[target_mask]
         if not target.data.dim():
             return Variable(torch.zeros(1))

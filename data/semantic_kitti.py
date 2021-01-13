@@ -12,7 +12,7 @@ splits = {
 }
 
 
-def _transorm_train(depth, refl, labels_image, labels, py, px, points_xyz, points_refl, new_h=289, new_w=4097):
+def _transorm_train(depth, refl, labels_image, labels, py, px, points_xyz, points_refl, new_h=289, new_w=4097, offset_augmentation=True):
     # new_h = 145 #289
     # new_w = 2046 #4097
 
@@ -22,16 +22,16 @@ def _transorm_train(depth, refl, labels_image, labels, py, px, points_xyz, point
     depth = cv2.resize(depth, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
     refl = cv2.resize(refl, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
     labels_image = cv2.resize(labels_image, (new_w, new_h), interpolation=cv2.INTER_NEAREST)
+    if offset_augmentation:
+        offset_x = np.random.randint(depth.shape[1] - 2049 + 1)#1025 + 1)
+        offset_y = 0 #np.random.randint(depth.shape[0] - 289 + 1)
 
-    offset_x = np.random.randint(depth.shape[1] - 1025 + 1)
-    offset_y = 0 #np.random.randint(depth.shape[0] - 289 + 1)
+        depth = depth[offset_y : offset_y + new_h, offset_x : offset_x + 2049]#1025]
+        refl = refl[offset_y : offset_y + new_h, offset_x : offset_x + 2049]#1025]
+        labels_image = labels_image[offset_y : offset_y + new_h, offset_x : offset_x + 2049]#1025]
 
-    depth = depth[offset_y : offset_y + new_h, offset_x : offset_x + 1025]
-    refl = refl[offset_y : offset_y + new_h, offset_x : offset_x + 1025]
-    labels_image = labels_image[offset_y : offset_y + new_h, offset_x : offset_x + 1025]
-
-    py = (py - offset_y) / new_h
-    px = (px - offset_x) / 1025.0
+        py = (py - offset_y) / new_h
+        px = (px - offset_x) / 2049 #1025
 
     valid = (px >= 0) & (px <= 1) & (py >= 0) & (py <= 1)
     labels = labels[valid]
@@ -71,6 +71,7 @@ def _transorm_test(depth, refl, labels_image, labels, py, px, points_xyz, points
 
 class SemanticKitti(torch.utils.data.Dataset):
     def __init__(self, dataset_dir: Path, split: str, new_h: int=289, new_w: int=4097) -> None:
+        dataset_dir = Path(dataset_dir)
         self.split = split
         self.seqs = splits[split]
         self.dataset_dir = dataset_dir
@@ -109,15 +110,15 @@ class SemanticKitti(torch.utils.data.Dataset):
             depth_image, refl_image, labels_image, labels, py, px, points_xyz, points_refl = _transorm_test(
                 depth_image, refl_image, labels_image, labels, py, px, points_xyz, points_refl, new_h=self.new_h, new_w=self.new_w
             )
-
-        tree = kdtree(points_xyz)
-        _, knns = tree.query(points_xyz, k=7)
+        #TODO(nik): fix later
+        #tree = kdtree(points_xyz)
+        #_, knns = tree.query(points_xyz, k=7)
 
         if points_xyz.shape[0] < px.shape[0]:
             pad_len = px.shape[0] - points_xyz.shape[0]
             points_xyz = np.vstack([points_xyz, np.zeros((pad_len, 3))])
             points_refl = np.concatenate([points_refl, np.zeros(pad_len)])
-            knns = np.vstack([knns, np.zeros((pad_len, 7))])
+            #knns = np.vstack([knns, np.zeros((pad_len, 7))])
 
         # normalize values to be between -10 and 10
         depth_image = 25 * (depth_image - 0.4)
@@ -137,7 +138,7 @@ class SemanticKitti(torch.utils.data.Dataset):
             "py": py,
             "points_xyz": points_xyz,
             "points_refl": points_refl,
-            "knns": knns,
+            #"knns": knns,
         }
 
         if self.split in ["test", "val"]:

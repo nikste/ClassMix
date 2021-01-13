@@ -138,7 +138,12 @@ def get_iou(data_list, class_num, dataset, save_path=None):
             "terrain", "sky", "person", "rider",
             "car", "truck", "bus",
             "train", "motorcycle", "bicycle"))
-
+    elif dataset == 'semantic_kitti':
+        classes = np.array((    "car", "bicycle",
+            "motorcycle", "truck", "other-vehicle", "person",
+            "bicyclist", "motorcyclist", "road", "parking",
+            "sidewalk", "other-ground", "building", "fence",
+            "vegetation", "trunk", "terrain", "pole", "traffic-sign"))
     for i, iou in enumerate(j_list):
         print('class {:2d} {:12} IU {:.2f}'.format(i, classes[i], j_list[i]))
 
@@ -171,17 +176,17 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
 
     elif dataset == 'semantic_kitti':
         num_classes = 19 # ?
-        new_h = 65
-        new_w = 2049
+        new_h = input_size[0]
+        new_w = input_size[1]
         # data_loader = get_loader(dataset)
         data_path = get_data_path(dataset)
         # train_dataset = data_loader(data_path)
         test_dataset = semantic_kitti.SemanticKitti(
-            data_path / "dataset/sequences", "val",
+            data_path + "/dataset/sequences", "val",
             new_h=new_h, new_w=new_w
         )
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
-        interp = nn.Uspample(size=(new_h, new_w), mode='bilinear', align_corners=True)
+        interp = nn.Upsample(size=(new_h, new_w), mode='bilinear', align_corners=True)
 
     print('Evaluating, found ' + str(len(testloader)) + ' images.')
 
@@ -208,7 +213,7 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
             if dataset == 'pascal_voc':
                 output = output[:,:size[0],:size[1]]
                 gt = np.asarray(label[0].numpy()[:size[0],:size[1]], dtype=np.int)
-            elif dataset == 'cityscapes':
+            elif dataset == 'cityscapes' or "semantic_kitti":
                 gt = np.asarray(label[0].numpy(), dtype=np.int)
 
             output = output.transpose(1,2,0)

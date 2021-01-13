@@ -95,8 +95,8 @@ def sigmoid_ramp_up(iter, max_iter):
     else:
         return np.exp(- 5 * (1 - iter / max_iter) ** 2)
 
-def create_ema_model(model):
-    ema_model = Res_Deeplab(num_classes=num_classes)
+def create_ema_model(model, inchannels):
+    ema_model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
 
     for param in ema_model.parameters():
         param.detach_()
@@ -265,7 +265,7 @@ def main():
 
     # Initiate ema-model
     if train_unlabeled:
-        ema_model = create_ema_model(model)
+        ema_model = create_ema_model(model, inchannels=inchannels)
         ema_model.train()
         ema_model = ema_model.cuda()
     else:
@@ -297,19 +297,19 @@ def main():
 
         train_dataset = data_loader(data_path, is_transform=True, augmentations=data_aug, img_size=input_size)
     elif dataset == 'semantic_kitti':
-        new_h = 65
-        new_w = 2049
+        new_h = input_size[0] #65
+        new_w = input_size[1] #2049
         # data_loader = get_loader(dataset)
         data_path = get_data_path(dataset)
         # train_dataset = data_loader(data_path)
         train_dataset = semantic_kitti.SemanticKitti(
-            data_path / "dataset/sequences", "train",
+            data_path +"/dataset/sequences", "train",
             new_h=new_h, new_w=new_w
         )
 
 
     train_dataset_size = len(train_dataset)
-    print ('dataset size: ', train_dataset_size)
+    print ('train dataset size: ', train_dataset_size)
 
     partial_size = labeled_samples
     print('Training on number of samples:', partial_size)
@@ -345,7 +345,7 @@ def main():
 
     optimizer.zero_grad()
 
-    interp = nn.Upsample(size=(input_size[0], input_size[1]), mode='bilinear', align_corners=True)
+    interp = nn.Upsample(size=(input_size[0], 2049), mode='bilinear', align_corners=True)
 
     start_iteration = 0
 
@@ -538,9 +538,12 @@ def main():
                     accumulated_loss_u = []
 
 
-        if i_iter % val_per_iter == 0 and i_iter != 0:
+        if i_iter % val_per_iter == 0: #and i_iter != 0:
             model.eval()
-            mIoU, eval_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=(512,1024), save_dir=checkpoint_dir)
+            if dataset == 'semantic_kitti':
+                mIoU, eval_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=input_size, save_dir=checkpoint_dir)
+            else:
+                mIoU, eval_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=(512,1024), save_dir=checkpoint_dir)
 
             model.train()
 
@@ -563,7 +566,10 @@ def main():
     _save_checkpoint(num_iterations, model, optimizer, config, ema_model)
 
     model.eval()
-    mIoU, val_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=(512,1024), save_dir=checkpoint_dir)
+    if dataset == 'semantic_kitti':
+        mIoU, val_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=input_size, save_dir=checkpoint_dir)
+    else:
+        mIoU, val_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=(512,1024), save_dir=checkpoint_dir)
 
     model.train()
     if mIoU > best_mIoU and save_best_model:
@@ -612,6 +618,11 @@ if __name__ == '__main__':
             split_id = './splits/voc/split_0.pkl'
         else:
             split_id = None
+    elif dataset == 'semantic_kitti':
+        IMG_MEAN = np.array([0., 0., 0.])
+        num_classes = 19
+        data_dir = './data/semantic_kitti/'
+        split_id = None
 
     if config['pretrained'] == 'coco':
         restore_from = 'http://vllab1.ucmerced.edu/~whung/adv-semi-seg/resnet101COCO-41f33a49.pth'
