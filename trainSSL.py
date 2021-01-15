@@ -1,24 +1,20 @@
 import argparse
 import os
-import sys
-import random
 import timeit
 import datetime
 
 import numpy as np
 import pickle
-import scipy.misc
 
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
 from torch.utils import data, model_zoo
 from torch.autograd import Variable
-import torchvision.transforms as transform
 
-from model.deeplabv2 import Res_Deeplab
+from models import deeplab
+from models.deeplabv2 import Res_Deeplab
 
 from utils.loss import CrossEntropy2d
 from utils.loss import CrossEntropyLoss2dPixelWiseWeighted
@@ -32,19 +28,13 @@ import utils.palette as palette
 from utils.sync_batchnorm import convert_model
 from utils.sync_batchnorm import DataParallelWithCallback
 
-from data.voc_dataset import VOCDataSet
-
 from data import get_loader, get_data_path, semantic_kitti
 from data.augmentations import *
-from tqdm import tqdm
 
-import PIL
 from torchvision import transforms
 import json
 from torch.utils import tensorboard
 from evaluateSSL import evaluate
-
-import time
 
 start = timeit.default_timer()
 start_writeable = datetime.datetime.now().strftime('%m-%d_%H-%M')
@@ -67,6 +57,8 @@ def get_arguments():
                         help='Name of the run (default: None)')
     parser.add_argument("--save-images", type=str, default=None,
                         help='Include to save images (default: None)')
+    parser.add_argument("--model", type=str, default="deeplabv2",
+                        help="model to train, either deeplabv2 (original) or deeplabv3 (deeplabv3 with resnet50 from kprnet)")
     return parser.parse_args()
 
 
@@ -248,8 +240,10 @@ def main():
     else:
         inchannels = 3
     # create network
-    model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
-
+    if args.model == "deeplabv2":
+        model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
+    elif args.model == "deeplabv3":
+        model = deeplab.resnet50_aspp(num_classes=num_classes, inchannels=inchannels, pretrained=True)
     # load pretrained parameters
     if restore_from[:4] == 'http' :
         saved_state_dict = model_zoo.load_url(restore_from)

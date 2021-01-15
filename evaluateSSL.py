@@ -1,27 +1,16 @@
 import argparse
-import scipy
-from scipy import ndimage
-import cv2
 import numpy as np
-import sys
-from collections import OrderedDict
 import os
 
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-import torchvision.models as models
-import torch.nn.functional as F
-from torch.utils import data, model_zoo
+from torch.utils import data
 
-from model.deeplabv2 import Res_Deeplab
-from data.voc_dataset import VOCDataSet
+from models.deeplabv2 import Res_Deeplab
 from data import get_data_path, get_loader, semantic_kitti
-import torchvision.transforms as transform
-from torchvision import transforms
 
 from PIL import Image
-import scipy.misc
 from utils.loss import CrossEntropy2d
 
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
