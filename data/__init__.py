@@ -24,4 +24,6 @@ def get_data_path(name):
         return './data/VOC2012/'
     elif name == 'semantic_kitti':
         return './data/semantic_kitti'
+    elif name == 'blurring':
+        return './data/blurring', './data/nemesis'
 
