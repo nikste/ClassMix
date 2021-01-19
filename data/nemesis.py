@@ -12,7 +12,7 @@ from PIL import Image
 import glob
 import sys
 import os
-
+from pathlib import Path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
 import transformations as tr
@@ -26,15 +26,19 @@ class Nemesis():
         self.training = training
         self.image_scaling_ratio = image_scaling_ratio
         print("going through root nemesis", root)
-        for dir in root:
-            print("nemesis, looking into", osp.join(root, 'images'), "found", len(list(glob.glob(osp.join(root, 'images/*.jpg')))))
-            for file_path in glob.glob(osp.join(dir, 'images/*.jpg')):
-                filename = osp.basename(file_path).split('.')[0]
-                img_file = file_path
-                print("appending", img_file)
-                self.files.append({
-                    "img": img_file,
-                })
+        all_img_files = [f for f in Path(root).glob('**/*')]
+        print("found nemesis:", len(all_img_files))
+        for f in all_img_files:
+            self.files.append({"img": f})
+        #for dir in [f for f in Path(root):
+        #    print("nemesis, looking into", osp.join(root, 'images'), "found", len(list(glob.glob(osp.join(root, 'images/*.jpg')))))
+        #    for file_path in glob.glob(osp.join(dir, 'images/*.jpg')):
+        #        filename = osp.basename(file_path).split('.')[0]
+        #        img_file = file_path
+        #        print("appending", img_file)
+        #        self.files.append({
+        #            "img": img_file,
+        #        })
 
     def __len__(self):
         return len(self.files)
@@ -50,7 +54,8 @@ class Nemesis():
                                interpolation=cv2.INTER_NEAREST)
 
         sample = {"image": image, "label": label}
-        return self.transforms_tr(sample)
+        sample = self.transforms_tr(sample)
+        return sample["image"], sample["label"], -1, -1, -1 # dummy values
         # return sample
 
     def transforms_tr(self, sample):

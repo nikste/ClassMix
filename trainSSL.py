@@ -366,7 +366,7 @@ def main():
 
     optimizer.zero_grad()
 
-    interp = nn.Upsample(size=(input_size[0], 2049), mode='bilinear', align_corners=True)
+    interp = nn.Upsample(size=(input_size[0], input_size[1]), mode='bilinear', align_corners=True) # was 2049
 
     start_iteration = 0
 

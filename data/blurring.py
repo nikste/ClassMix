@@ -50,10 +50,10 @@ class Blurring():
         # image_PIL = Image.fromarray(image)
         # label_PIL = Image.fromarray(label)
         if self.training:
-            return self.transforms_tr(sample)
+            sample = self.transforms_tr(sample)
         else:
-            return self.transforms_valid(sample)
-
+            sample = self.transforms_valid(sample)
+        return sample["image"], sample["label"], -1, -1, -1 # dummy values
 
     def transforms_tr(self, sample):
         prob_augmentation = random.random()
