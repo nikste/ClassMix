@@ -87,9 +87,11 @@ def sigmoid_ramp_up(iter, max_iter):
     else:
         return np.exp(- 5 * (1 - iter / max_iter) ** 2)
 
-def create_ema_model(model, inchannels):
-    ema_model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
-
+def create_ema_model(model, in_channels, modeltype):
+    if modeltype == "deeplabv2" or modeltype == 'DeepLab':
+        ema_model = Res_Deeplab(num_classes=num_classes, in_channels=in_channels)
+    elif modeltype == "deeplabv3":
+        ema_model = deeplab.resnet50_aspp(num_classes=num_classes, in_channels=in_channels, pretrained=True)
     for param in ema_model.parameters():
         param.detach_()
     mp = list(model.parameters())
@@ -236,14 +238,14 @@ def main():
     cudnn.enabled = True
 
     if dataset == 'semantic_kitti':
-        inchannels = 2
+        in_channels = 2
     else:
-        inchannels = 3
+        in_channels = 3
     # create network
-    if args.model == "deeplabv2":
-        model = Res_Deeplab(num_classes=num_classes, inchannels=inchannels)
-    elif args.model == "deeplabv3":
-        model = deeplab.resnet50_aspp(num_classes=num_classes, inchannels=inchannels, pretrained=True)
+    if config['model'] == "deeplabv2" or config['model'] == 'DeepLab':
+        model = Res_Deeplab(num_classes=num_classes, in_channels=in_channels)
+    elif config['model'] == "deeplabv3":
+        model = deeplab.resnet50_aspp(num_classes=num_classes, in_channels=in_channels, pretrained=True)
     # load pretrained parameters
     if restore_from[:4] == 'http' :
         saved_state_dict = model_zoo.load_url(restore_from)
@@ -259,7 +261,7 @@ def main():
 
     # Initiate ema-model
     if train_unlabeled:
-        ema_model = create_ema_model(model, inchannels=inchannels)
+        ema_model = create_ema_model(model, in_channels=in_channels, modeltype=config['model'])
         ema_model.train()
         ema_model = ema_model.cuda()
     else:
@@ -331,11 +333,17 @@ def main():
 
     if optimizer_type == 'SGD':
         if len(gpus) > 1:
-            optimizer = optim.SGD(model.module.optim_parameters(learning_rate_object),
-                        lr=learning_rate, momentum=momentum,weight_decay=weight_decay)
+            if config['model'] == "deeplabv2" or config['model'] == 'DeepLab':
+                optimizer = optim.SGD(model.module.optim_parameters(learning_rate_object),
+                            lr=learning_rate, momentum=momentum,weight_decay=weight_decay)
+            elif config['model'] == "deeplabv3":
+                optimizer = optim.SGD( model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
         else:
-            optimizer = optim.SGD(model.optim_parameters(learning_rate_object),
-                        lr=learning_rate, momentum=momentum,weight_decay=weight_decay)
+            if config['model'] == "deepblabv2" or config['model'] == 'DeepLab':
+                optimizer = optim.SGD(model.optim_parameters(learning_rate_object),
+                            lr=learning_rate, momentum=momentum,weight_decay=weight_decay)
+            elif config['model'] == "deeplabv3":
+                optimizer = optim.SGD( model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
 
     optimizer.zero_grad()
 

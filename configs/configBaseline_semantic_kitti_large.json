@@ -3,7 +3,7 @@
   "dataset": "semantic_kitti",
 
   "training": {
-    "batch_size": 2,
+    "batch_size": 3,
     "num_workers": 4,
     "optimizer": "SGD",
     "momentum": 0.9,
@@ -17,7 +17,7 @@
     "data": {
       "split_id_list": 0,
       "labeled_samples": 372,
-      "input_size": "65,1025",
+      "input_size": "289,4097",
       "scale": false,
       "crop": true
     },

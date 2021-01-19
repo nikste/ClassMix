@@ -1,9 +1,9 @@
 {
-  "model": "DeepLab",
+  "model": "deeplabv3",
   "dataset": "semantic_kitti",
 
   "training": {
-    "batch_size": 2,
+    "batch_size": 3,
     "num_workers": 4,
     "optimizer": "SGD",
     "momentum": 0.9,
@@ -16,13 +16,13 @@
 
     "data": {
       "split_id_list": 0,
-      "labeled_samples": 372,
-      "input_size": "65,1025",
+      "labeled_samples": 2391,
+      "input_size": "289,4097",
       "scale": false,
       "crop": true
     },
     "unlabeled": {
-      "train_unlabeled": false,
+      "train_unlabeled": true,
       "consistency_weight": 1,
       "consistency_loss": "CE",
       "pixel_weight": "threshold_uniform",
@@ -39,7 +39,7 @@
 
   "utils": {
     "save_checkpoint_every": 5000,
-    "checkpoint_dir": "./checkpoints/DeepLabv2_baseline_semantic_kitti",
+    "checkpoint_dir": "./checkpoints/DeepLabv3_semantic_kitti_0125",
     "val_per_iter": 5000,
     "tensorboard": true,
     "log_per_iter": 100,
