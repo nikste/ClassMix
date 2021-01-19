@@ -15,7 +15,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-#import transformations as tr
+import transformations as tr
 
 
 
@@ -56,13 +56,13 @@ class Nemesis():
     def transforms_tr(self, sample):
         if sample['image'].shape[0] < 720 or sample['image'].shape[1] < 960:
             composed_transforms = transforms.Compose([
-                torchvision.transforms.Resize((720, 960)),#tr.Resize((720, 960)),
-                torchvision.transforms.ToTensor()])
+                tr.Resize((720, 960)),
+                tr.ToTensor()])
 
         else:
             composed_transforms = transforms.Compose([
-                torchvision.transforms.RandomCrop((820, 960)),#tr.RandomCrop((720, 960)),
-                torchvision.transforms.ToTensor()])
+                tr.RandomCrop((720, 960)),
+                tr.ToTensor()])
         return composed_transforms(sample)
 if __name__ == "__main__":
 

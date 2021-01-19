@@ -15,7 +15,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-#import transformations as tr
+import transformations as tr
 
 
 
@@ -65,8 +65,8 @@ class Blurring():
         #         tr.ToTensor()])
         # else:
         composed_transforms = transforms.Compose([
-            torchvision.transforms.RandomCrop((720, 960)),#tr.RandomCrop((720, 960)),
-            torchvision.transforms.ToTensor()])
+            tr.RandomCrop((720, 960)),#tr.RandomCrop((720, 960)),
+            tr.ToTensor()])
         return composed_transforms(sample)
 
     def transforms_valid(self, sample):
