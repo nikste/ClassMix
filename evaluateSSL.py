@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torch.utils import data
 
+from data.blurring import Blurring
 from models.deeplabv2 import Res_Deeplab
 from data import get_data_path, get_loader, semantic_kitti
 
@@ -176,6 +177,14 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
         )
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
         interp = nn.Upsample(size=(new_h, new_w), mode='bilinear', align_corners=True)
+
+    if dataset == 'blurring':
+        num_classes = 26
+        labeled_data_dir, unlabeled_data_dir = get_data_path(dataset)
+        test_dataset = Blurring(os.path.join(labeled_data_dir, 'valid'), training=False)
+        # test_dataset = data_loader(data_path, img_size=input_size, is_transform=True, split='val')
+        testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
+        interp = nn.Upsample(size=input_size, mode='bilinear', align_corners=True)
 
     print('Evaluating, found ' + str(len(testloader)) + ' images.')
 
