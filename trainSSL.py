@@ -13,6 +13,8 @@ import torch.backends.cudnn as cudnn
 from torch.utils import data, model_zoo
 from torch.autograd import Variable
 
+from data.blurring import Blurring
+from data.nemesis import Nemesis
 from models import deeplab
 from models.deeplabv2 import Res_Deeplab
 
@@ -300,8 +302,21 @@ def main():
             data_path +"/dataset/sequences", "train",
             new_h=new_h, new_w=new_w
         )
+    elif dataset == 'blurring':
+        labeled_data_dir, unlabeled_data_dir = get_data_path(dataset)
+        train_dataset = Blurring(os.path.join(labeled_data_dir, 'train'), image_scaling_ratio=args.image_scaling_ratio)
+        valid_dataset = Blurring(os.path.join(labeled_data_dir, 'valid'), training=False)
+        unlabeled_train_dataset = Nemesis(unlabeled_data_dir, image_scaling_ratio=args.image_scaling_ratio)
+        unlabeled_train_dataset_size = len(unlabeled_train_dataset)
+        trainloader = data.DataLoader(train_dataset,
+                                      batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
+        trainloader_gt = data.DataLoader(train_dataset,
+                                         batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
+        # trainloader_unlabeled = data.DataLoader(unlabeled_train_dataset, batch_size=args.batch_size, shuffle=True,
+        #                                         num_workers=1, pin_memory=True)
+        # trainloader_unlabeled_iter = enumerate(trainloader_unlabeled)
     train_dataset_size = len(train_dataset)
     print ('train dataset size: ', train_dataset_size)
 
@@ -321,9 +336,13 @@ def main():
     trainloader_iter = iter(trainloader)
 
     if train_unlabeled:
-        train_remain_sampler = data.sampler.SubsetRandomSampler(train_ids[partial_size:])
-        trainloader_remain = data.DataLoader(train_dataset,
-                    batch_size=batch_size, sampler=train_remain_sampler, num_workers=1, pin_memory=True)
+        if "blurring":
+            trainloader_remain = data.DataLoader(unlabeled_train_dataset, batch_size=args.batch_size, shuffle=True,
+                                                num_workers=1, pin_memory=True)
+        else:
+            train_remain_sampler = data.sampler.SubsetRandomSampler(train_ids[partial_size:])
+            trainloader_remain = data.DataLoader(train_dataset,
+                        batch_size=batch_size, sampler=train_remain_sampler, num_workers=1, pin_memory=True)
         trainloader_remain_iter = iter(trainloader_remain)
 
     # Optimizer for segmentation network
