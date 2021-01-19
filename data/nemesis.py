@@ -4,18 +4,18 @@ import random
 #import matplotlib.pyplot as plt
 import collections
 import torch
+import torchvision
 import torchvision.transforms as transforms
 import cv2
 from torch.utils import data
 from PIL import Image
 import glob
-import yaml
 import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-import transformations as tr
+#import transformations as tr
 
 
 
@@ -25,10 +25,13 @@ class Nemesis():
         self.files = []
         self.training = training
         self.image_scaling_ratio = image_scaling_ratio
+        print("going through root nemesis", root)
         for dir in root:
+            print("nemesis, looking into", osp.join(root, 'images'), "found", len(list(glob.glob(osp.join(root, 'images/*.jpg')))))
             for file_path in glob.glob(osp.join(dir, 'images/*.jpg')):
                 filename = osp.basename(file_path).split('.')[0]
                 img_file = file_path
+                print("appending", img_file)
                 self.files.append({
                     "img": img_file,
                 })
@@ -53,13 +56,13 @@ class Nemesis():
     def transforms_tr(self, sample):
         if sample['image'].shape[0] < 720 or sample['image'].shape[1] < 960:
             composed_transforms = transforms.Compose([
-                tr.Resize((720, 960)),
-                tr.ToTensor()])
+                torchvision.transforms.Resize((720, 960)),#tr.Resize((720, 960)),
+                torchvision.transforms.ToTensor()])
 
         else:
             composed_transforms = transforms.Compose([
-                tr.RandomCrop((720, 960)),
-                tr.ToTensor()])
+                torchvision.transforms.RandomCrop((820, 960)),#tr.RandomCrop((720, 960)),
+                torchvision.transforms.ToTensor()])
         return composed_transforms(sample)
 if __name__ == "__main__":
 

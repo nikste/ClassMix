@@ -4,18 +4,18 @@ import random
 #import matplotlib.pyplot as plt
 import collections
 import torch
+import torchvision
 import torchvision.transforms as transforms
 import cv2
 from torch.utils import data
 from PIL import Image
 import glob
-import yaml
 import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
-import transformations as tr
+#import transformations as tr
 
 
 
@@ -25,7 +25,7 @@ class Blurring():
         self.root = root
         self.files = []
         self.training = training
-
+        print("blurring, looking into", osp.join(root, 'images'), "found", len(list(glob.glob(osp.join(root, 'images/*.jpg')))))
         for file_path in glob.glob(osp.join(root, 'images/*.jpg')):
             filename = osp.basename(file_path).split('.')[0]
             img_file = file_path
@@ -65,14 +65,14 @@ class Blurring():
         #         tr.ToTensor()])
         # else:
         composed_transforms = transforms.Compose([
-            tr.RandomCrop((720, 960)),
-            tr.ToTensor()])
+            torchvision.transforms.RandomCrop((720, 960)),#tr.RandomCrop((720, 960)),
+            torchvision.transforms.ToTensor()])
         return composed_transforms(sample)
 
     def transforms_valid(self, sample):
         composed_transforms = transforms.Compose([
-            tr.Resize((720, 960)),
-            tr.ToTensor()])
+            torchvision.transforms.RandomCrop((720, 960)),#tr.Resize((720, 960)),
+            torchvision.transforms.ToTensor()])
         return composed_transforms(sample)
 
 

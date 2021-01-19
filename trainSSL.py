@@ -306,19 +306,19 @@ def main():
         )
     elif dataset == 'blurring':
         labeled_data_dir, unlabeled_data_dir = get_data_path(dataset)
-        train_dataset = Blurring(os.path.join(labeled_data_dir, 'train'), image_scaling_ratio=args.image_scaling_ratio)
+        train_dataset = Blurring(os.path.join(labeled_data_dir, 'train'))#, image_scaling_ratio=args.image_scaling_ratio)
         valid_dataset = Blurring(os.path.join(labeled_data_dir, 'valid'), training=False)
-        unlabeled_train_dataset = Nemesis(unlabeled_data_dir, image_scaling_ratio=args.image_scaling_ratio)
+        unlabeled_train_dataset = Nemesis(unlabeled_data_dir)#, image_scaling_ratio=args.image_scaling_ratio)
         unlabeled_train_dataset_size = len(unlabeled_train_dataset)
+        print("train_dataset", len(train_dataset))
+        print("valid_dataset", len(valid_dataset))
+        print("unlabeled_train", len(unlabeled_train_dataset))
         trainloader = data.DataLoader(train_dataset,
-                                      batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+                                      batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
         trainloader_gt = data.DataLoader(train_dataset,
-                                         batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+                                         batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-        # trainloader_unlabeled = data.DataLoader(unlabeled_train_dataset, batch_size=args.batch_size, shuffle=True,
-        #                                         num_workers=1, pin_memory=True)
-        # trainloader_unlabeled_iter = enumerate(trainloader_unlabeled)
     train_dataset_size = len(train_dataset)
     print ('train dataset size: ', train_dataset_size)
 
@@ -339,7 +339,7 @@ def main():
 
     if train_unlabeled:
         if "blurring":
-            trainloader_remain = data.DataLoader(unlabeled_train_dataset, batch_size=args.batch_size, shuffle=True,
+            trainloader_remain = data.DataLoader(unlabeled_train_dataset, batch_size=batch_size, shuffle=True,
                                                 num_workers=1, pin_memory=True)
         else:
             train_remain_sampler = data.sampler.SubsetRandomSampler(train_ids[partial_size:])
@@ -644,7 +644,10 @@ if __name__ == '__main__':
         num_classes = 19
         data_dir = './data/semantic_kitti/'
         split_id = None
-
+    elif dataset == 'blurring':
+        IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
+        num_classes = 26
+        split_id = None
     if config['pretrained'] == 'coco':
         restore_from = 'http://vllab1.ucmerced.edu/~whung/adv-semi-seg/resnet101COCO-41f33a49.pth'
 
