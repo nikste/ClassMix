@@ -29,7 +29,7 @@ class Nemesis():
         all_img_files = [f for f in Path(root).glob('**/*')]
         print("found nemesis:", len(all_img_files))
         for f in all_img_files:
-            self.files.append({"img": f})
+            self.files.append({"img": str(f)})
         #for dir in [f for f in Path(root):
         #    print("nemesis, looking into", osp.join(root, 'images'), "found", len(list(glob.glob(osp.join(root, 'images/*.jpg')))))
         #    for file_path in glob.glob(osp.join(dir, 'images/*.jpg')):

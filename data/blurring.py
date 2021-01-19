@@ -71,8 +71,8 @@ class Blurring():
 
     def transforms_valid(self, sample):
         composed_transforms = transforms.Compose([
-            torchvision.transforms.RandomCrop((720, 960)),#tr.Resize((720, 960)),
-            torchvision.transforms.ToTensor()])
+            tr.RandomCrop((720, 960)),#tr.Resize((720, 960)),
+            tr.ToTensor()])
         return composed_transforms(sample)
 
 

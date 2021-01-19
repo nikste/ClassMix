@@ -561,7 +561,7 @@ def main():
 
         if i_iter % val_per_iter == 0: #and i_iter != 0:
             model.eval()
-            if dataset == 'semantic_kitti':
+            if dataset == 'semantic_kitti' or dataset == 'blurring':
                 mIoU, eval_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=input_size, save_dir=checkpoint_dir)
             else:
                 mIoU, eval_loss = evaluate(model, dataset, ignore_label=ignore_label, input_size=(512,1024), save_dir=checkpoint_dir)
