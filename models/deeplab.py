@@ -204,7 +204,7 @@ def resnext101_aspp_kp(num_classes):
     classifier = DeepLabHead(2048, num_classes)
     return DeepLabKP(backbone, classifier)
 
-def resnet50_aspp_kp(num_classes):
+def resnet50_aspp_kp(num_classes, in_channels=3):
     backbone = resnet.resnet50(
         pretrained=True
     )
@@ -213,9 +213,9 @@ def resnet50_aspp_kp(num_classes):
 
 
 
-def resnet50_aspp(num_classes, image_channels=2, pretrained=True):
+def resnet50_aspp(num_classes, in_channels=2, pretrained=True):
     backbone = resnet.resnet50(
-        pretrained=pretrained, replace_stride_with_dilation=[False, True, True], image_channels=image_channels
+        pretrained=pretrained, replace_stride_with_dilation=[False, True, True], image_channels=in_channels
     )
     classifier = DeepLabHead(2048, num_classes, kp=False)
     return DeepLab(backbone, classifier)

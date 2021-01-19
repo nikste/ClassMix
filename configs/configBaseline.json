@@ -39,7 +39,7 @@
 
   "utils": {
     "save_checkpoint_every": 5000,
-    "checkpoint_dir": "./checkpoints/DeepLabv2",
+    "checkpoint_dir": "./checkpoints/DeepLabv2_baseline",
     "val_per_iter": 100,
     "tensorboard": true,
     "log_per_iter": 100,

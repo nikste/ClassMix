@@ -1,6 +1,6 @@
 {
   "model": "DeepLab",
-  "dataset": "semantic_kitti",
+  "dataset": "cityscapes",
 
   "training": {
     "batch_size": 2,
@@ -17,12 +17,12 @@
     "data": {
       "split_id_list": 0,
       "labeled_samples": 372,
-      "input_size": "65,1025",
+      "input_size": "512,512",
       "scale": false,
       "crop": true
     },
     "unlabeled": {
-      "train_unlabeled": false,
+      "train_unlabeled": true,
       "consistency_weight": 1,
       "consistency_loss": "CE",
       "pixel_weight": "threshold_uniform",
@@ -35,11 +35,11 @@
   },
   "seed": 1,
   "pretrained": "coco",
-  "ignore_label": 255,
+  "ignore_label": 250,
 
   "utils": {
     "save_checkpoint_every": 5000,
-    "checkpoint_dir": "./checkpoints/DeepLabv2_baseline_semantic_kitti",
+    "checkpoint_dir": "../saved/DeepLabv2",
     "val_per_iter": 5000,
     "tensorboard": true,
     "log_per_iter": 100,
