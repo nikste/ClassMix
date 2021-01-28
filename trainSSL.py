@@ -254,12 +254,30 @@ def main():
     else:
         saved_state_dict = torch.load(restore_from)
 
-    # Copy loaded parameters to model
-    new_params = model.state_dict().copy()
-    for name, param in new_params.items():
-        if name in saved_state_dict and param.size() == saved_state_dict[name].size():
-            new_params[name].copy_(saved_state_dict[name])
-    model.load_state_dict(new_params)
+    if config['model'] == 'deeplabv2' or config['model'] == 'DeepLab':
+        # Copy loaded parameters to model
+        print('loading pretrained model deeplabv2')
+        new_params = model.state_dict().copy()
+        for name, param in new_params.items():
+            if name in saved_state_dict and param.size() == saved_state_dict[name].size():
+                new_params[name].copy_(saved_state_dict[name])
+        model.load_state_dict(new_params)
+    if config['model'] == 'deeplabv3':
+        print("loading pretrained model deeplabv3")
+        new_params = model.state_dict().copy()
+        saved_state_dict = torch.load("pretrained_models/resnet50_cityscapes_2p.pth")
+        for name, param in new_params.items():
+            if name in saved_state_dict and param.size() == saved_state_dict[name].size():
+                new_params[name].copy_(saved_state_dict[name])
+        model.load_state_dict(new_params)
+        #model.load_state_dict(
+        #    torch.load(
+        #        "pretrained_models/resnet50_cityscapes_2p.pth"#, map_location=f"cuda:{rank}"
+        #    ),
+        #    strict=False,
+        #)
+    else:
+        print("WARNING NO PRETRAINED MODEL LOADED!")
 
     # Initiate ema-model
     if train_unlabeled:
@@ -338,7 +356,7 @@ def main():
     trainloader_iter = iter(trainloader)
 
     if train_unlabeled:
-        if "blurring":
+        if dataset == "blurring":
             trainloader_remain = data.DataLoader(unlabeled_train_dataset, batch_size=batch_size, shuffle=True,
                                                 num_workers=1, pin_memory=True)
         else:
@@ -358,15 +376,17 @@ def main():
             elif config['model'] == "deeplabv3":
                 optimizer = optim.SGD( model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
         else:
-            if config['model'] == "deepblabv2" or config['model'] == 'DeepLab':
+            if config['model'] == "deeplabv2" or config['model'] == 'DeepLab':
                 optimizer = optim.SGD(model.optim_parameters(learning_rate_object),
                             lr=learning_rate, momentum=momentum,weight_decay=weight_decay)
             elif config['model'] == "deeplabv3":
                 optimizer = optim.SGD( model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
 
     optimizer.zero_grad()
-
-    interp = nn.Upsample(size=(input_size[0], input_size[1]), mode='bilinear', align_corners=True) # was 2049
+    if dataset == 'semantic_kitti':
+        interp = nn.Upsample(size=(input_size[0], 2049), mode='bilinear', align_corners=True) # was 2049
+    else:
+        interp = nn.Upsample(size=(input_size[0], input_size[1]), mode='bilinear', align_corners=True) # was 2049
 
     start_iteration = 0
 

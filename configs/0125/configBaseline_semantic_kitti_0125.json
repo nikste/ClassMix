@@ -39,7 +39,7 @@
 
   "utils": {
     "save_checkpoint_every": 5000,
-    "checkpoint_dir": "./checkpoints/DeepLabv2_baseline_semantic_kitti_0125",
+    "checkpoint_dir": "./checkpoints/DeepLabv2_semantic_kitti_0125",
     "val_per_iter": 5000,
     "tensorboard": true,
     "log_per_iter": 100,

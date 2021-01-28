@@ -134,6 +134,12 @@ def get_iou(data_list, class_num, dataset, save_path=None):
             "bicyclist", "motorcyclist", "road", "parking",
             "sidewalk", "other-ground", "building", "fence",
             "vegetation", "trunk", "terrain", "pole", "traffic-sign"))
+    elif dataset == 'blurring':
+        classes = np.array(("Road", "Car", "Vegetation", "Building", "Water", "Boat", "Sky", "Sidewalk", "Person", "Terrain",
+                  "Person Group", "Vehicle Group", "trailer", "motorcycle", "unlabelled", "Truck", "Motorcyclist",
+                  "Other rider", "Other Vehicle", "Bicycle", "Bicylist", "Barrier", "Bus", "Caravan", "Wheeled Slow",
+                  "Pedestrian Area"))
+        
     for i, iou in enumerate(j_list):
         print('class {:2d} {:12} IU {:.2f}'.format(i, classes[i], j_list[i]))
 
@@ -178,7 +184,7 @@ def evaluate(model, dataset, ignore_label=250, save_output_images=False, save_di
         testloader = data.DataLoader(test_dataset, batch_size=1, shuffle=False, pin_memory=True)
         interp = nn.Upsample(size=(new_h, new_w), mode='bilinear', align_corners=True)
 
-    if dataset == 'blurring':
+    elif dataset == 'blurring':
         num_classes = 26
         labeled_data_dir, unlabeled_data_dir = get_data_path(dataset)
         test_dataset = Blurring(os.path.join(labeled_data_dir, 'valid'), training=False)
